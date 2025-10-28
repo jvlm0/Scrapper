@@ -11,5 +11,7 @@ import java.util.UUID;
 
 public interface ObjetoInteresseRespository extends JpaRepository<ObjetoInteresseModel, Long> {
 
+    @Query("SELECT o.hash FROM ObjetoInteresseModel o WHERE o.hash IN :hashes")
+    Set<String> findAllHashesExistentes(@Param("hashes") List<String> hashes);
 
 }
