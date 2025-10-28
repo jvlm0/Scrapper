@@ -41,14 +41,6 @@ public class CamposObjetoModel implements Serializable {
     @OneToMany(mappedBy = "camposObjeto", fetch =  FetchType.LAZY)
     private Set<RelatorioExecucaoModel> relatoriosExecucao = new HashSet<>();
 
-
-
-    @JsonProperty (access = JsonProperty.Access.WRITE_ONLY)
-    @OneToMany(mappedBy = "linkConteudo", fetch =  FetchType.LAZY)
-    private Set<CamposObjetoModel> conteudos = new HashSet<>();
-
-
-
     // 🔹 Relacionamento com o "pai"
     @ManyToOne
     @JoinColumn(name = "campo_link_id")
@@ -58,8 +50,5 @@ public class CamposObjetoModel implements Serializable {
     @JsonProperty (access = JsonProperty.Access.WRITE_ONLY)
     @OneToMany(mappedBy = "campoObjetoLink", cascade = CascadeType.ALL, orphanRemoval = true)
     private Set<CamposObjetoModel> camposPaginaObjeto = new HashSet<>();
-
-
-
 
 }

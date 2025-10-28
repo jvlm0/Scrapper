@@ -34,15 +34,12 @@ public class ObjetoInteresseModel implements Serializable {
     @OneToMany(mappedBy = "objetoInteresse", cascade = CascadeType.ALL, fetch =  FetchType.LAZY)
     private Set<RelatorioExecucaoModel> relatoriosExecucao = new HashSet<>();
 
-    @OneToMany(mappedBy = "objetoInteresse", cascade = CascadeType.ALL, fetch =  FetchType.LAZY)
-    private Set<ConteudoObjetoModel> conteudoObjetoModels = new HashSet<>();
+
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "site_id")
     @JsonIgnore
     private SiteModel site;
-
-
 
 
 }
