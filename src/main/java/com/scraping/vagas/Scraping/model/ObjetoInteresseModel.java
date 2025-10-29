@@ -41,5 +41,10 @@ public class ObjetoInteresseModel implements Serializable {
     @JsonIgnore
     private SiteModel site;
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "scraping_job_id")
+    @JsonIgnore
+    private ScrapingJob scrapingJob;
+
 
 }

@@ -31,7 +31,7 @@ public class ScrapingService {
      * Retorna número total de páginas a partir do seletor de navegação do site.
      * Lança ScrapingException se não for possível acessar a página principal.
      */
-    private int getTotalPages(SiteModel site) {
+    public int getTotalPages(SiteModel site) {
         try {
             Document docPages = Jsoup.connect(site.getUrlBase())
                     .timeout(10_000)

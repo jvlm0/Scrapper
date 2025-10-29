@@ -1,6 +1,6 @@
 package com.scraping.vagas.Scraping.model;
 
-import com.fasterxml.jackson.annotation.JsonManagedReference;
+
 import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.persistence.*;
 import lombok.*;
@@ -50,6 +50,10 @@ public class SiteModel implements Serializable {
     @JsonProperty (access = JsonProperty.Access.WRITE_ONLY)
     @OneToMany(mappedBy = "site", fetch = FetchType.LAZY)
     private Set<ObjetoInteresseModel> objetos = new HashSet<>();
+
+    @JsonProperty (access = JsonProperty.Access.WRITE_ONLY)
+    @OneToMany(mappedBy = "site", fetch = FetchType.LAZY)
+    private Set<ScrapingJob> jobs = new HashSet<>();
 
 
 
