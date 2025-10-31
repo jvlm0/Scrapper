@@ -80,14 +80,20 @@ public class ScrapingService {
         return rem;
     }
 
+
+    public List<ObjetoInteresseModel> scrapeAllPages(SiteModel site) {
+
+        int totalPages = getTotalPages(site);
+        return scrapeAllPages(site, 1, totalPages);
+
+    }
+
     /**
      * Realiza scraping de todas as páginas e salva os objetos resultantes.
      * A operação é transacional: ou todos os objetos gravam, ou rollback.
      */
     @Transactional
-    public List<ObjetoInteresseModel> scrapeAllPages(ScrapBody scrapBody) {
-        SiteModel site = siteRepository.findById(scrapBody.site_id())
-                .orElseThrow(() -> new ScrapingException("Site não encontrado para id: " + scrapBody.site_id()));
+    public List<ObjetoInteresseModel> scrapeAllPages(SiteModel site, int paginaInicial, int paginaFinal) {
         Set<CamposObjetoModel> campos = site.getCamposObjetos();
 
 
@@ -99,10 +105,9 @@ public class ScrapingService {
 
         //System.out.println("O objeto tem "+campos.size()+" campos");
         List<ObjetoInteresseModel> objetos = new ArrayList<>();
-        int totalPages = getTotalPages(site);
-        log.info("Iniciando scraping do site id={} url={} totalPages={}", site.getId(), site.getUrlBase(), totalPages);
 
-        for (int page = 1; page <= totalPages; page++) {
+
+        for (int page = paginaInicial; page <= paginaFinal; page++) {
             String url = buildPageUrl(site, page);
             log.info("🔎 Scraping página {}: {}", page, url);
             Document doc;
