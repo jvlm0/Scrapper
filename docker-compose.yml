@@ -1,0 +1,44 @@
+version: '3.8'
+
+services:
+  mysql:
+    image: mysql:8.0
+    container_name: mysql
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: senha
+      MYSQL_DATABASE: scraping-db
+    ports:
+      - "3306:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+
+  scheduler:
+    build: .
+    container_name: scraping-scheduler
+    environment:
+      - SPRING_PROFILES_ACTIVE=scheduler
+    depends_on:
+      - mysql
+    restart: always
+
+  worker1:
+    build: .
+    container_name: scraping-worker1
+    environment:
+      - SPRING_PROFILES_ACTIVE=worker
+    depends_on:
+      - mysql
+    restart: always
+
+  worker2:
+    build: .
+    container_name: scraping-worker2
+    environment:
+      - SPRING_PROFILES_ACTIVE=worker
+    depends_on:
+      - mysql
+    restart: always
+
+volumes:
+  mysql_data:
