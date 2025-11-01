@@ -6,8 +6,10 @@ import com.scraping.vagas.Scraping.model.SiteModel;
 import com.scraping.vagas.Scraping.repositories.ScrapingJobRepository;
 import com.scraping.vagas.Scraping.repositories.SiteRepository;
 import com.scraping.vagas.Scraping.services.ScrapingService;
+import lombok.AllArgsConstructor;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.context.annotation.Profile;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
@@ -16,7 +18,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 @Component
-@RequiredArgsConstructor
+@Profile("scheduler")
+@AllArgsConstructor
 @Slf4j
 public class ScrapingScheduler {
 
@@ -43,7 +46,7 @@ public class ScrapingScheduler {
 
             try {
                 int totalPages = scrapingService.getTotalPages(site);
-                int batchSize = 100; // número de páginas por job
+                int batchSize = 2; // número de páginas por job
                 int start = 1;
                 List<ScrapingJob> jobs = new ArrayList<>();
                 while (start <= totalPages) {

@@ -100,7 +100,7 @@ public class ScrapingService {
         log.info("foram encontrados: "+campos.size());
 
         // logo após carregar o site
-        log.info("DEBUG: entrou em scrapeAllPages - site_id={}", scrapBody.site_id());
+        //log.info("DEBUG: entrou em scrapeAllPages - site_id={}", scrapBody.site_id());
 
 
         //System.out.println("O objeto tem "+campos.size()+" campos");
