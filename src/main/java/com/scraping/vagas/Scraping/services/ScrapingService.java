@@ -1,9 +1,11 @@
 package com.scraping.vagas.Scraping.services;
 
 import com.scraping.vagas.Scraping.dto.ScrapBody;
+import com.scraping.vagas.Scraping.enums.JobStatus;
 import com.scraping.vagas.Scraping.exception.ScrapingException;
 import com.scraping.vagas.Scraping.model.*;
 import com.scraping.vagas.Scraping.repositories.ObjetoInteresseRespository;
+import com.scraping.vagas.Scraping.repositories.ScrapingJobRepository;
 import com.scraping.vagas.Scraping.repositories.SiteRepository;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -16,6 +18,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
+import java.time.LocalDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -26,6 +29,7 @@ public class ScrapingService {
 
     private final SiteRepository siteRepository;
     private final ObjetoInteresseRespository objetoInteresseRespository;
+    private final ScrapingJobRepository scrapingJobRepository;
 
     /**
      * Retorna número total de páginas a partir do seletor de navegação do site.
@@ -84,14 +88,14 @@ public class ScrapingService {
     public List<ObjetoInteresseModel> scrapeAllPages(SiteModel site) {
 
         int totalPages = getTotalPages(site);
-        return scrapeAllPages(site, 1, totalPages);
+        return scrapeAllPages(site, 1, totalPages, null);
 
     }
 
     @Transactional
     public List<ObjetoInteresseModel> scrapeAllPages(ScrapingJob job) {
-
-        return scrapeAllPages(job.getSite(), job.getPaginaInicial(), job.getPaginaFinal());
+        ScrapingJob nJob = scrapingJobRepository.findById(job.getId()).get();
+        return scrapeAllPages(nJob.getSite(), nJob.getPaginaInicial(), nJob.getPaginaFinal(), nJob);
 
     }
 
@@ -99,7 +103,7 @@ public class ScrapingService {
      * Realiza scraping de todas as páginas e salva os objetos resultantes.
      * A operação é transacional: ou todos os objetos gravam, ou rollback.
      */
-    public List<ObjetoInteresseModel> scrapeAllPages(SiteModel site, int paginaInicial, int paginaFinal) {
+    public List<ObjetoInteresseModel> scrapeAllPages(SiteModel site, int paginaInicial, int paginaFinal, ScrapingJob job) {
         Set<CamposObjetoModel> campos = site.getCamposObjetos();
 
 
@@ -194,11 +198,29 @@ public class ScrapingService {
 
         objetos = getNovosObjetos(objetos);
 
+
         try {
             List<ObjetoInteresseModel> saved = objetoInteresseRespository.saveAll(objetos);
+            if (job != null) {
+                for (var objeto : objetos) {
+                    objeto.setScrapingJob(job);
+                }
+
+                job.setObjetos(new HashSet<>(objetos));
+                job.setStatus(JobStatus.COMPLETED);
+                job.setFinishedAt(LocalDateTime.now());
+                scrapingJobRepository.save(job);
+            }
             log.info("Persistidos {} novos objetos para o site id={}", saved.size(), site.getId());
             return saved;
         } catch (Exception e) {
+
+            if (job != null) {
+                job.setStatus(JobStatus.FAILED);
+                job.setFinishedAt(LocalDateTime.now());
+                scrapingJobRepository.save(job);
+            }
+
             log.error("Erro ao salvar objetos no banco: {}", e.getMessage(), e);
             throw new ScrapingException("Erro ao persistir objetos: " + e.getMessage(), e);
         }

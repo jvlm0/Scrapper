@@ -22,21 +22,19 @@ import java.util.Optional;
 
 @Component
 @Profile("worker")
-@RequiredArgsConstructor
+@AllArgsConstructor
 @Slf4j
-public class ScrapingWorker implements CommandLineRunner {
+public class ScrapingWorker {
 
     private final WorkerService workerService;
 
-    @Override
-    public void run(String... args) {
-        while (true) {
-            try {
-                workerService.processNextJob();
-                Thread.sleep(5000); // mesmo delay do scheduled
-            } catch (Exception e) {
-                log.error("Erro no worker: ", e);
-            }
+    @Scheduled(fixedDelay = 5000)
+    public void workerProcess() {
+        try {
+            workerService.processNextJob();
+            //Thread.sleep(5000); // mesmo delay do scheduled
+        } catch (Exception e) {
+            log.error("Erro no worker: ", e);
         }
     }
 }

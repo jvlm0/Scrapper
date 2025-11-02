@@ -26,6 +26,9 @@ public class ScrapingJob implements Serializable {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @Version
+    private Long version;
+
     private LocalDateTime createdAt;
     private LocalDateTime startedAt;
     private LocalDateTime finishedAt;
@@ -41,7 +44,7 @@ public class ScrapingJob implements Serializable {
 
     @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
     @OneToMany(mappedBy = "scrapingJob")
-    private Set<ObjetoInteresseModel> jobs = new HashSet<>();
+    private Set<ObjetoInteresseModel> objetos = new HashSet<>();
 
     @JsonIgnore
     @ManyToOne(fetch = FetchType.LAZY)
