@@ -1,44 +1,65 @@
-version: '3.8'
+version: "3.9"
 
 services:
-  mysql:
+  db:
     image: mysql:8.0
-    container_name: mysql
-    restart: always
+    container_name: scraping_db
     environment:
       MYSQL_ROOT_PASSWORD: senha
-      MYSQL_DATABASE: scraping-db
+      MYSQL_DATABASE: scraping_db
+      MYSQL_USER: user
+      MYSQL_PASSWORD: senha
     ports:
-      - "3306:3306"
+      - "3310:3306"
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-pSenha"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+      start_period: 30s
     volumes:
-      - mysql_data:/var/lib/mysql
+      - db_data:/var/lib/mysql
+    command: --default-authentication-plugin=mysql_native_password
+    networks:
+      - scraping-net
 
   scheduler:
-    build: .
+    build:
+      context: .
+      dockerfile: Dockerfile
     container_name: scraping-scheduler
     environment:
       - SPRING_PROFILES_ACTIVE=scheduler
+      - SPRING_DATASOURCE_URL=jdbc:mysql://db:3306/scraping_db?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC
+      - SPRING_DATASOURCE_USERNAME=root
+      - SPRING_DATASOURCE_PASSWORD=senha
+    ports:
+      - "8081:8081"
     depends_on:
-      - mysql
-    restart: always
+      db:
+        condition: service_healthy
+    networks:
+      - scraping-net
 
-  worker1:
-    build: .
-    container_name: scraping-worker1
+  worker:
+    build:
+      context: .
+      dockerfile: Dockerfile
     environment:
       - SPRING_PROFILES_ACTIVE=worker
+      - SPRING_DATASOURCE_URL=jdbc:mysql://db:3306/scraping_db?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC
+      - SPRING_DATASOURCE_USERNAME=root
+      - SPRING_DATASOURCE_PASSWORD=senha
     depends_on:
-      - mysql
-    restart: always
-
-  worker2:
-    build: .
-    container_name: scraping-worker2
-    environment:
-      - SPRING_PROFILES_ACTIVE=worker
-    depends_on:
-      - mysql
-    restart: always
+      db:
+        condition: service_healthy
+    networks:
+      - scraping-net
+    scale: 2 # opcional — cria 2 instâncias do worker automaticamente
 
 volumes:
-  mysql_data:
+  db_data:
+
+networks:
+  scraping-net:
+    driver: bridge

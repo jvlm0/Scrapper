@@ -80,7 +80,7 @@ public class ScrapingService {
         return rem;
     }
 
-
+    @Transactional
     public List<ObjetoInteresseModel> scrapeAllPages(SiteModel site) {
 
         int totalPages = getTotalPages(site);
@@ -88,11 +88,17 @@ public class ScrapingService {
 
     }
 
+    @Transactional
+    public List<ObjetoInteresseModel> scrapeAllPages(ScrapingJob job) {
+
+        return scrapeAllPages(job.getSite(), job.getPaginaInicial(), job.getPaginaFinal());
+
+    }
+
     /**
      * Realiza scraping de todas as páginas e salva os objetos resultantes.
      * A operação é transacional: ou todos os objetos gravam, ou rollback.
      */
-    @Transactional
     public List<ObjetoInteresseModel> scrapeAllPages(SiteModel site, int paginaInicial, int paginaFinal) {
         Set<CamposObjetoModel> campos = site.getCamposObjetos();
 

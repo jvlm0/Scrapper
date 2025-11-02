@@ -10,26 +10,34 @@ import jakarta.transaction.Transactional;
 import lombok.AllArgsConstructor;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.boot.CommandLineRunner;
 import org.springframework.context.annotation.Profile;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
-import java.time.LocalDateTime;
-import java.util.List;
-import java.util.UUID;
+
+import java.util.Optional;
+
 
 @Component
 @Profile("worker")
-@AllArgsConstructor
+@RequiredArgsConstructor
 @Slf4j
-public class ScrapingWorker {
+public class ScrapingWorker implements CommandLineRunner {
 
     private final WorkerService workerService;
 
-
-    @Scheduled(fixedDelay = 5000)
-    public void scheduledProcess() {
-        workerService.processNextJob();
+    @Override
+    public void run(String... args) {
+        while (true) {
+            try {
+                workerService.processNextJob();
+                Thread.sleep(5000); // mesmo delay do scheduled
+            } catch (Exception e) {
+                log.error("Erro no worker: ", e);
+            }
+        }
     }
 }
+

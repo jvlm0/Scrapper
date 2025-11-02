@@ -1,18 +1,18 @@
 package com.scraping.vagas.Scraping.services;
 
 import com.scraping.vagas.Scraping.enums.JobStatus;
-import com.scraping.vagas.Scraping.model.ObjetoInteresseModel;
 import com.scraping.vagas.Scraping.model.ScrapingJob;
 import com.scraping.vagas.Scraping.repositories.ScrapingJobRepository;
 import lombok.AllArgsConstructor;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
-import java.util.HashSet;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 @Service
@@ -24,14 +24,27 @@ public class WorkerService {
     private final ScrapingService scrapingService;
     private final String workerId = UUID.randomUUID().toString();
 
+    public ScrapingJob fetchAndLockNextJob() {
+        Optional<ScrapingJob> oJob = jobRepository.findNextPendingJobForUpdate();
+        ScrapingJob job = null;
+        if (oJob.isPresent()) {
+            job = oJob.get();
+            job.setStatus(JobStatus.RUNNING);
+            job.setStartedAt(LocalDateTime.now());
+            job.setWorkerId(workerId);
+            jobRepository.save(job);
+        }
+        return job;
+    }
+
     // Método transacional chamado pelo @Scheduled
     @Transactional
     public void processNextJob() {
-        List<ScrapingJob> jobs = jobRepository.findPendingJobs(PageRequest.of(0, 1));
 
-        if (jobs.isEmpty()) return;
+        ScrapingJob job = fetchAndLockNextJob();
 
-        ScrapingJob job = jobs.get(0);
+        if (job == null) return;
+
         log.info("⚙️ Worker {} pegou job {}", workerId, job.getId());
 
         job.setStatus(JobStatus.RUNNING);
@@ -40,13 +53,7 @@ public class WorkerService {
         jobRepository.save(job); // salva imediatamente o status RUNNING
 
         try {
-            List<ObjetoInteresseModel> objetos =  scrapingService.scrapeAllPages(job.getSite(), job.getPaginaInicial(), job.getPaginaFinal());
-
-            for (var ob : objetos) {
-                ob.setScrapingJob(job);
-            }
-
-            job.setJobs(new HashSet<>(objetos));
+            scrapingService.scrapeAllPages(job.getSite(), job.getPaginaInicial(), job.getPaginaFinal());
             job.setStatus(JobStatus.COMPLETED);
             log.info("✅ Job {} finalizado com sucesso", job.getId());
         } catch (Exception e) {
