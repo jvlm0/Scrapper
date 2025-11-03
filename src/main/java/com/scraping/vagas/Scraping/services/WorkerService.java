@@ -7,6 +7,7 @@ import com.scraping.vagas.Scraping.repositories.ScrapingJobRepository;
 import jakarta.persistence.OptimisticLockException;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -23,7 +24,7 @@ public class WorkerService {
 
     private final ScrapingJobRepository jobRepository;
     private final ScrapingService scrapingService;
-    private final String workerId = UUID.randomUUID().toString();
+    private static String workerId = UUID.randomUUID().toString();
 
     /**
      * Busca um job pendente e tenta "pegar" ele via lock otimista.
@@ -33,6 +34,8 @@ public class WorkerService {
     public ScrapingJob fetchAndLockNextJob() {
         Optional<ScrapingJob> oJob = jobRepository.findNextPendingJob();
         if (oJob.isEmpty()) return null;
+
+        workerId = UUID.randomUUID().toString();
 
         ScrapingJob job = oJob.get();
 
@@ -53,7 +56,7 @@ public class WorkerService {
     /**
      * Método agendado que busca e executa o próximo job.
      */
-
+    @Async("workerExecutor")
     public void processNextJob() {
         ScrapingJob job = fetchAndLockNextJob();
 

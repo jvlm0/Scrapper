@@ -21,14 +21,13 @@ import java.util.Optional;
 
 
 @Component
-@Profile("worker")
 @AllArgsConstructor
 @Slf4j
 public class ScrapingWorker {
 
     private final WorkerService workerService;
 
-    @Scheduled(fixedDelay = 5000)
+    @Scheduled(fixedRate = 1000)
     public void workerProcess() {
         try {
             workerService.processNextJob();

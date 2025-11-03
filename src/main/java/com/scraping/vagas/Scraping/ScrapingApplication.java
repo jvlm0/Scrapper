@@ -8,10 +8,8 @@ import org.springframework.scheduling.annotation.EnableScheduling;
 
 @EnableScheduling
 @SpringBootApplication
-public class ScrapingApplication implements CommandLineRunner {
+public class ScrapingApplication {
 
-    @Value("${spring.profiles.active:worker}")
-    private String profile;
 
 	public static void main(String[] args) {
 
@@ -19,13 +17,6 @@ public class ScrapingApplication implements CommandLineRunner {
 	}
 
 
-    @Override
-    public void run(String... args) {
-        if ("scheduler".equals(profile)) {
-            System.out.println("🚀 Rodando como Scheduler");
-        } else {
-            System.out.println("🧩 Rodando como Worker");
-        }
-    }
+
 
 }

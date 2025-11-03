@@ -18,7 +18,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 @Component
-@Profile("scheduler")
 @AllArgsConstructor
 @Slf4j
 public class ScrapingScheduler {

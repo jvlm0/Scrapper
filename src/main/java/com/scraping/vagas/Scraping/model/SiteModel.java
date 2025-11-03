@@ -56,9 +56,6 @@ public class SiteModel implements Serializable {
     private Set<ScrapingJob> jobs = new HashSet<>();
 
 
-
-
-
     public SiteModel(String nome, String urlPrefix, String urlBase, String urlPesquisa, int frequenciaMinutos, String containerCardsCssSelector, String cardCssSelector, String navPageCssSelector, String pageCssItemCssSelector, String urlPage) {
         this.nome = nome;
         this.urlPrefix = urlPrefix;
